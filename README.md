@@ -32,7 +32,7 @@ Usage Scenario:
 
 	Say that you/your company are/is building a product that uses Java, Ruby, or ActionScripts.
 	And you want to make sure that people (or really hackers) don't try to reverse-engineer or
-	peak into your code to to steal your technology. If that's your case, then AppVFS is what 
+	peek into your code to steal your technology. If that's your case, then AppVFS is what 
 	you need. 
 	
 Why/How, and what else do I need to do:
@@ -88,16 +88,7 @@ Supported Platforms:
 Performance:
 ============
 
-	Given that this is an application-level VFS, performance will surely be affected.
-	However, performance may still be within acceptable range for you because the VFS 
-	is actually loaded into memory by AppVFS. It all depends on the number of files
-	and the overall size of VFS image you generate with mkvfs. I've ran a rails app
-	from a VFS which includes both of the rails app and the ruby installation (total of 198MB)
-	and performance was somewhat acceptable. If I leave the ruby installation out of the 
-	image then the performance is comparable to real environment running off of hard disk.
-	Therefore, when you package your application, you may want to split into two parts.
-	Your Senitive data, code and even binaries (that you don't want hackers to get access to)
-	go into the image and common stuff go into hard disk.
+	Given that this is an application-level VFS, performance will surely be affected.  However, performance may still be within acceptable range for you because the VFS is actually loaded into memory by AppVFS. It all depends on the number of files and the overall size of VFS image you generate with mkvfs. I have ran a rails app from a VFS which includes both of the rails app and the ruby installation (total of 198MB) and performance was acceptable. If I leave the ruby installation out of the image then the performance is comparable to real environment running off of hard disk.  Therefore, when you package your application, you may want to split into two parts.  Your Senitive data, code and even binaries (that you do not want hackers to get access to) go into the image and common stuff go into hard disk.
 
 
 Issues:
@@ -130,8 +121,8 @@ Issues:
 	   to package a ruby installation. Note that you also need to use the -xdir option
 	   with appvfs in order to get rails (or networking ruby apps) working.
 
-Building:
-=========
+Building AppVFS:
+================
 	
 1.  Download and install the Dokan Library
 	http://dokan-dev.net/wp-content/uploads/DokanInstall_0.6.0.exe
@@ -179,7 +170,7 @@ Building DOKAN Library:
 	1. Get the Dokan Library sources:
 		svn checkout http://dokan.googlecode.com/svn/trunk/ dokan-read-only
 
-		if you don't have svn, you can download it from http://sourceforge.net/projects/win32svn/
+		if you do not have svn, you can download it from http://sourceforge.net/projects/win32svn/
 
 	2.  You need the Windows Driver Kit Version 7.1.0 (earlier version might work) which
 	    you can get from:
@@ -283,7 +274,7 @@ Vfsctl Help:
 		vfsctl.exe stats
 	
 
-Sample output vfsctl.exe stats
+Sample output vfsctl.exe stats:
 ===============================
 
 opName                   #Calls    ExeTime   #R-Calls  R-ExeTime
