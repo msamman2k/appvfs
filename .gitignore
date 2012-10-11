@@ -1,0 +1,6 @@
+*~
+*.swp
+*.log
+openSSL/
+dokan/
+mingw-libgnurx-2.5.1/
