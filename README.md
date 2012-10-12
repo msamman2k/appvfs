@@ -172,6 +172,8 @@ Building DOKAN Library:
 
 		if you do not have svn, you can download it from http://sourceforge.net/projects/win32svn/
 
+		Dokan is also on github  https://github.com/clone/dokan
+
 	2.  You need the Windows Driver Kit Version 7.1.0 (earlier version might work) which
 	    you can get from:
 		http://www.microsoft.com/en-us/download/confirmation.aspx?id=11800
@@ -193,10 +195,10 @@ Building DOKAN Library:
 Mkvfs Usage:
 ============
 
+<pre>
 Usage: mkvfs.exe -l inputImage
 Usage: -h [detail]
 Usage: mkvfs.exe -o outputImage [-k password] [-r filter] [-e filter] dirOrFile+
-
 Where:
    -o ouptutImage -- specify the output image file name
    -k password    -- specify encryption password. If specified, the image
@@ -224,10 +226,12 @@ Examples:
        -r '.o#.obj#^(app|data)#rename.sh#sh.exe'  \
        -e '[/]doc([/]|$)' \
        -e '[/]tmp/'
+</pre>
 
 AppVFS Help:
 ============
 
+<pre>
 appvfs -a archive -m mountPoint [options]
   -a*rchive imageFIle     -- specify the VFS archive image file
   -m*ountPoint folder     -- specify the VFS mount point/folder
@@ -257,11 +261,13 @@ Notes:
         3    -- show all I/O calls
         4    -- show all I/O calls with additional detail
         5    -- show debug from Dokan DLL
-
+</pre>
 
 
 Vfsctl Help:
 ============
+
+<pre>
 	./vfsctl.exe -h
 	Cmmands:
 	      set debug dbgLev      -- set AppVFS debug level to 'dbgLev'
@@ -294,4 +300,5 @@ GetFileSecurity               4          0          0          0
 Overall: LookupCnt=336740, LookupTime=3276, FetchTime=437
 
 ----------
+</pre>
 

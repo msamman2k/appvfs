@@ -64,7 +64,7 @@ mkvfs.exe: fsmgr.cpp globals.h mingwMain.o $(REGEXPSOBJS)
 mingwMain.o: %.o: %.cpp
 	$(CC) $(CFLAGS) -c -DUNICODE -D_UNICODE  -o $@  $(@:.o=.cpp)
 
-vfsctl.exe: vfsctl.cpp
+vfsctl.exe: vfsctl.cpp globals.h
 	 $(CC) $(CFLAGS) -o $@ vfsctl.cpp -luser32 -lgdi32 -lws2_32
 
 dkmount.exe: dkmount.cpp mingwMain.o

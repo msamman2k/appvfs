@@ -1615,14 +1615,19 @@ public:
 		return(0);
 	}
 
-	inline bool Equal(const TCHAR *str1, const TCHAR *str2)
+#define ToUpper(c) (((c) >= L'a' && (c) <= L'z')? (c) - (L'a' - L'A'): (c))
+	
+#define ChrEqual(c1,c2)	(ToUpper(c1) == ToUpper(c2))
+//#define ChrEqual(c1,c2)	(_totupper(c1) == _totupper(c2))
+
+	inline bool PathEqual(const TCHAR *str1, const TCHAR *str2)
 	{
 		const TCHAR *p1;
 		const TCHAR *p2;
 		for(p1=str1, p2=str2; *p1 && *p2; ++p1, ++p2)
 		{
 			TCHAR c1 = *p1, c2 = *p2;
-			if (_totupper(c1) == _totupper(c2))
+			if (ChrEqual(c1,c2))
 				continue;
 			if (c1 == '\\') c1 = '/';
 			if (c2 == '\\') c2 = '/';
@@ -1637,13 +1642,53 @@ public:
 		return(!*p1 && !*p2);
 	}
 
+	inline bool NameEqual(const TCHAR *str1, const TCHAR *str2)
+	{
+		const TCHAR *p1;
+		const TCHAR *p2;
+		for(p1=str1, p2=str2; *p1 && *p2; ++p1, ++p2)
+		{
+			TCHAR c1 = *p1, c2 = *p2;
+			if (ChrEqual(c1,c2))
+				continue;
+			return(false);
+		}
+		return(!*p1 && !*p2);
+	}
+
 
 	inline ReadFileData* GetChildByName(ReadFileData* parent, LPCWSTR cName)
 	{
 		for(ReadFileData*c = GetFirstChild(parent); c; c=GetNextSibling(c))
 		{
-			if (Equal(c->name0, cName))
+			if (NameEqual(c->name0, cName))
 				return(c);
+		}
+		return(0);
+	}
+
+	inline ReadFileData* GetChildByName(ReadFileData* parent, LPCWSTR cName, int len)
+	{
+		if (!parent->fd->firstChildIndex)
+			return(0);
+		ReadFileData*c = (ReadFileData*)m_inFileList[parent->fd->firstChildIndex];
+		while(c)
+		{
+			const TCHAR *p1 = c->name0;
+			const TCHAR *p2 = cName;
+			int i;
+			for(i=0; i < len; i++, ++p1, ++p2)
+			{
+				if (!ChrEqual(*p1, *p2))
+					break;
+				if (IsDirSep(*p2))
+					Logger::log(0, "Internal error %ws\n", cName);
+			}
+			if (!*p1 && i == len)
+				return(c);
+			if (!c->fd->nextSiblingIndex)
+				break;
+			c = (ReadFileData*) m_inFileList[c->fd->nextSiblingIndex];
 		}
 		return(0);
 	}
@@ -1679,7 +1724,7 @@ public:
 			ReadFileData *item = (ReadFileData*) m_inFileList[index];
 			// Logger::log(0, "\tCheck: %ws == %ws\n", item->path, name);
 
-			if (Equal(item->path, name))
+			if (PathEqual(item->path, name))
 			{
 				if (!(*pInRedirectPath = item->redirect))
 				{
@@ -1716,18 +1761,13 @@ public:
 				;
 			if (IsDirSep(*p))
 			{
-				TCHAR tmp[MAX_PATH];
-				int len = p -name;
-				for(int j=0; j < len; j++)
-					tmp[j] = name[j];
-				tmp[len] = 0;
-				parent = GetChildByName(parent, tmp);
+				parent = GetChildByName(parent, name, p - name);
 				if (parent)
 					*pInRedirectPath = parent->redirect;
 				name = p+1;
 				continue;
 			}
-			ReadFileData *ent = GetChildByName(parent, name);
+			ReadFileData *ent = GetChildByName(parent, name, p - name);
 			if (ent)
 			{
 				*pInRedirectPath = ent->redirect;

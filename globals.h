@@ -218,6 +218,28 @@ class MessagePipe
 		BOOL Create(const char *name)
 		{
 			sprintf(m_pipeName, "\\\\.\\pipe\\%s", name); 
+
+			SECURITY_ATTRIBUTES sa;
+			PSECURITY_DESCRIPTOR psd = (PSECURITY_DESCRIPTOR)malloc(SECURITY_DESCRIPTOR_MIN_LENGTH);
+			sa.lpSecurityDescriptor = psd;
+
+			if (!InitializeSecurityDescriptor(psd, SECURITY_DESCRIPTOR_REVISION))
+			{
+				Logger::logWinError(GetLastError(), "failed to create pipe %s", m_pipeName);
+				free(psd);
+				return(false);
+			}
+
+			if (!SetSecurityDescriptorDacl(psd, TRUE, (PACL)0, FALSE))
+			{
+				Logger::logWinError(GetLastError(), "failed to create pipe %s", m_pipeName);
+				free(psd);
+				return(false);
+			}
+			sa.nLength = sizeof sa;
+			sa.bInheritHandle = TRUE;
+			
+
 			m_hPipe = ::CreateNamedPipeA(m_pipeName,
 					PIPE_ACCESS_INBOUND, 
 					PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, 
@@ -225,12 +247,14 @@ class MessagePipe
 					8 * 1024, 
 					64 * 1024,
  					NMPWAIT_USE_DEFAULT_WAIT, 
-					NULL);
+					&sa);
 			if (m_hPipe == INVALID_HANDLE_VALUE)
 			{
 				Logger::logWinError(GetLastError(), "failed to create pipe %s", m_pipeName);
+				free(psd);
 				return(FALSE);
 			}
+			free(psd);
 			return (TRUE);
 		}
 
@@ -246,13 +270,13 @@ class MessagePipe
 				{
 					error = GetLastError();
 					bOK = FALSE;
-					fprintf(stderr, "ERROR: failed read from pipe %d\n", error);
+					Logger::logWinError(error, "failed to create pipe %s", m_pipeName);
 				}
 				::DisconnectNamedPipe(m_hPipe);
 			}
 			else
 			{
-				fprintf(stderr, "ERROR: failed to connect pipe %d\n", error);
+				Logger::logWinError(error, "failed to connect to pipe %s", m_pipeName);
 			}
 		return(bOK);
 		}

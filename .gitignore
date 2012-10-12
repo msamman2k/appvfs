@@ -1,6 +1,10 @@
 *~
 *.swp
 *.log
+*.img
+*.o
+*.obj
+*.exe
 openSSL/
 dokan/
 mingw-libgnurx-2.5.1/

@@ -126,6 +126,7 @@ struct OpData
 		totalExecTime 		+= opData.totalExecTime ;
 		totalRedirectExecTime += opData.totalRedirectExecTime ;
 	}
+
 	int AppendHeader(char *out, int off=0)
 	{
 		int len = sprintf(out+off, "%-20s %10s %10s %10s %10s\n",
@@ -140,6 +141,12 @@ struct OpData
 					"--------",
 					"--------",
 					"--------");
+		return(len);
+	}
+	
+	int AppendLine(char *out, int off, char  *line)
+	{
+		int len = sprintf(out+off, "%s\n", line);
 		return(len);
 	}
 
@@ -161,7 +168,7 @@ static OpData OpInfo[MAX_OPS];
 #define InitOp(func)	OpInfo[op_##func].Reset(op_##func, #func)
 void InitOps()
 {
-	OpInfo[0].Reset(0, "*OVERALL*:");
+	OpInfo[0].Reset(0, "OVERALL:");
 	InitOp(CreateFile);
 	InitOp(CreateDirectory);
 	InitOp(OpenDirectory);
@@ -388,17 +395,11 @@ struct FILE_CONTEXT
 {
 	HANDLE handle;
 	ArchiveEntry *pze;
-#ifdef VALIDATE_2
-	WCHAR FileName[MAX_PATH];
-#endif
 
 	FILE_CONTEXT(LPCWSTR _FileName, ArchiveEntry *_pze, HANDLE _handle=0)
 	{
 		this->pze = _pze;
 		this->handle = _handle;
-#ifdef VALIDATE_2
-		wcscpy( this->FileName, _FileName);
-#endif
 	}
 };
 
@@ -488,12 +489,6 @@ class DBGCtx
 			{
 				pze = GetContextArchiveEntry(m_pDFI->Context);
 				FILE_CONTEXT *ctx = (FILE_CONTEXT*)m_pDFI->Context;
-#ifdef VALIDATE_2
-				if (wcscmp(FileName, ctx->FileName))
-				{
-					SDBG0("Internal error on %ws != %ws\n", FileName, ctx->FileName);
-				}
-#endif
 			}
 
 			if (!pze)
@@ -2324,7 +2319,7 @@ AppVFS_GetVolumeInformation(
 	*FileSystemFlags |= FILE_SUPPORTS_OPEN_BY_FILE_ID;
 #endif
 	*FileSystemFlags |= FILE_SUPPORTS_OBJECT_IDS;
-	SDBG2("==> GetVolumeInformation: nameBufLen=%d\n", FileSystemNameSize);
+	SDBG3("==> GetVolumeInformation: nameBufLen=%d\n", FileSystemNameSize);
 	wcscpy(FileSystemNameBuffer, L"Dokan");
 
 	return 0;
@@ -2554,6 +2549,7 @@ char* ProcessCmd(char *line, char *out)
 				OpData &opData = OpInfo[i];
 				opData.Reset();
 			}
+			g_lookupCount = g_lookupTime = g_fetchTime = 0;
 			return(out);
 		}
 		else if (!strcmp(cmd, "redirect"))
@@ -2585,6 +2581,7 @@ char* ProcessCmd(char *line, char *out)
 				len += opData.Append(out, len);
 				overall.Add(opData);
 			}
+			len += overall.AppendLine(out, len, "----------------------------------------------------------------");
 			len += overall.Append(out, len);
 			sprintf(out+len, "\nOverall: LookupCnt=%ld, LookupTime=%ld, FetchTime=%ld\n",
 				g_lookupCount,
