@@ -144,7 +144,7 @@ struct OpData
 		return(len);
 	}
 	
-	int AppendLine(char *out, int off, char  *line)
+	int AppendLine(char *out, int off, const char  *line)
 	{
 		int len = sprintf(out+off, "%s\n", line);
 		return(len);
@@ -199,7 +199,7 @@ struct ProcMgr
 
 	ProcMgr()
 	{
-		disabled = true;
+		disabled = false;
 		i_procList.Init(32);
 		OSPROC *ourProc = FindProc(GetCurrentProcessId());
 		AddProc(ourProc);
@@ -968,7 +968,6 @@ AppVFS_CreateFile(
 
 	// if AccessMode & SYNCHRONIZE them must call AppVFS_LockFile
 	DBGCtx dbgCtx(pDFI, op_CreateFile, FileName);
-	CheckAccess(dbgCtx);
 
 
 	if (CreationDisposition == CREATE_NEW || CreationDisposition == TRUNCATE_EXISTING ||
@@ -997,7 +996,10 @@ AppVFS_CreateFile(
 		}
 		*/
 		else
+		{
+			CheckAccess(dbgCtx);
 			pDFI->Context = AllocContext(pDFI, FileName, pze, 0);
+		}
 		goto endCreateFile;
 	}
 	/*
@@ -1008,6 +1010,7 @@ AppVFS_CreateFile(
 	*/
 
 	// When filePath is a directory, needs to change the flag so that the file can be opened.
+	CheckAccess(dbgCtx);
 	dbgCtx.GetFilePath(FileName);
 
 	fileAttr = GetFileAttributes(dbgCtx.filePath);
@@ -2180,34 +2183,17 @@ AppVFS_GetFileSecurity(
 	DBGCtx dbgCtx(pDFI, op_GetFileSecurity, FileName);
 	CheckAccess(dbgCtx);
 
-	// *pSecInfo = *pSecInfo & ~SACL_SECURITY_INFORMATION;
 	if (g_archMode && !dbgCtx.redirect)
 	{
 #if 1
 		WCHAR path[MAX_PATH];
 		GetModuleFileName(GetModuleHandle(0), path, sizeof(path)-1);
-		// wcscpy(path, g_MountPoint);
 		if (!GetFileSecurity(path, *pSecInfo, psd, BufferLength, LengthNeeded))
 		{
 			error = GetLastError();
 		}
 #else
 		error = GetDefaultSecurity(pSecInfo, psd, BufferLength, LengthNeeded);
-#endif
-#if 0
-		HANDLE hProg = CreateFile( path, 
-						GENERIC_READ | READ_CONTROL| ACCESS_SYSTEM_SECURITY, 
-						FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-
-		if (hProg && hProg != INVALID_HANDLE_VALUE) 
-		{
-			if (!GetUserObjectSecurity(hProg, pSecInfo, psd, BufferLength, LengthNeeded))
-			{
-				error = GetLastError();
-			}
-			CloseHandle(hProg);
-			SDBG0("hProg1 = %x, secInfo=0x%8.8X, err=%d\n", hProg, *pSecInfo, error);
-		}
 #endif
 		goto endGetFileSec;
 	}
@@ -2222,30 +2208,6 @@ AppVFS_GetFileSecurity(
 	{
 		error = GetLastError();
 	}
-#if 0
-	else if (!GetUserObjectSecurity(handle, pSecInfo, psd, BufferLength, LengthNeeded))
-	{
-		error = GetLastError();
-		if (error == ERROR_ACCESS_DENIED)
-		{
-			dbgCtx.GetFilePath(FileName);
-			HANDLE hProg = CreateFile( dbgCtx.filePath, 
-						GENERIC_READ | READ_CONTROL| ACCESS_SYSTEM_SECURITY, 
-						FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-			SDBG0("Open %ws, h=%x, err=%d\n", dbgCtx.filePath, hProg, GetLastError());
-			if (hProg && hProg != INVALID_HANDLE_VALUE) 
-			{
-				if (GetUserObjectSecurity(hProg, pSecInfo, psd, BufferLength, LengthNeeded))
-					error = NOERROR;
-				else
-				{
-				SDBG0("GetUserObjectSecurity %ws, h=%x, err=%d\n", dbgCtx.filePath, hProg, GetLastError());
-				}
-				CloseHandle(hProg);
-			}
-		}
-	}
-#endif
 
 end:
 endGetFileSec:
@@ -2438,6 +2400,7 @@ static void DOKAN_CALLBACK AppVFS_MountReady(LPCWSTR deviceName, LPCWSTR mountPo
 	wcscpy(volumeName, L"\\\\?");
 	wcscat(volumeName, deviceName);
 	SDBG2("MountPoint is ready: deviceName=%ws, p=%ws\n", deviceName, mountPoint);
+	g_mountReady = true;
 #if 0
 	SDBG0("\t\tVolume=%ws\n", volumeName);
 	WCHAR mountPoint2[MAX_PATH];

@@ -148,7 +148,7 @@ void rbx_resolve(int argc, VALUE *argv, VALUE self)
 	DFilePath tmpFilename;
 	int wrap = FIX2INT(v_wrap);
 	int require = FIX2INT(v_require);
-#if 1
+
 	bool isRB = tmpFilename.BuildPath(filename, !require, ".rb", RBVM_EXT);
 	if (isRB)
 	{
@@ -187,38 +187,21 @@ void rbx_resolve(int argc, VALUE *argv, VALUE self)
 			return;
 		}
 	}
-#endif
-	VALUE v_tmp = rb_find_file(FilePathValue(v_fname));
-	const char *absPath = v_tmp? RSTRING_PTR(v_tmp): "n/a";
 
+	// pass it to ruby
 	if (!require)
 	{
-#if 0
-		ZipEntry *pze = zipManager.GetEntry(filename);
-		if (pze)
-		{
-			DBG2("++++ LOAD FROM ZIP FILE %s\n", filename);
-			char *buf = pze->Data();
-		 	VALUE parser = rb_parser_new();
-			VALUE str = rb_str_new(buf, strlen(buf));
-			NODE *node = rb_parser_compile_string(parser, filename, str, 1);
-			VALUE iseq = rb_iseq_new_top(node, rb_str_new("<top (required)>"), v_fname, v_tmp, Qfalse);
-			rb_iseq_eval(iseq);
-			return;
-		}
-#endif
-		DBG2("resolve: rbLoad filename=%s, wrap=%d => %s\n", filename, wrap, absPath);
+		DBG2("R-load filename=%s\n", filename);
 		rb_load(v_fname, wrap);
 	}
 	else
 	{
-		DBG2("resolve: rbRequire filename=%s, wrap=%d => %s\n", filename, wrap, absPath);
+		DBG2("R-require filename=%s\n", filename);
 		rb_require(filename);
 	}
 }
 
 static const char *kerInitStr = "\
-#require \"zlib\"\n\
 module Kernel\n\
   alias_method :old_load, :load\n\
   alias_method :old_require, :require\n\
@@ -237,9 +220,9 @@ end\n";
 void initHooks()
 {
 	rb_eval_string(kerInitStr);
-	rb_define_singleton_method(rb_mKernel, "load", (VALUE(*)(ANYARGS))rbx_load, -1);
+//	rb_define_singleton_method(rb_mKernel, "load", (VALUE(*)(ANYARGS))rbx_load, -1);
 	rb_define_singleton_method(rb_mKernel, "resolve", (VALUE(*)(ANYARGS))rbx_resolve, -1);
-	rb_define_singleton_method(rb_cISeq, "load", (PROCTYPE) iseq_s_load, -1);
+//	rb_define_singleton_method(rb_cISeq, "load", (PROCTYPE) iseq_s_load, -1);
 
 
 #ifndef RUBYDLL

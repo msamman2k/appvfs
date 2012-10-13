@@ -1618,7 +1618,7 @@ public:
 #define ToUpper(c) (((c) >= L'a' && (c) <= L'z')? (c) - (L'a' - L'A'): (c))
 	
 #define ChrEqual(c1,c2)	(ToUpper(c1) == ToUpper(c2))
-//#define ChrEqual(c1,c2)	(_totupper(c1) == _totupper(c2))
+//#define ChrEqual(c1,c2)	(_totupper(c1) == _totupper(c2))	// this is too slow
 
 	inline bool PathEqual(const TCHAR *str1, const TCHAR *str2)
 	{

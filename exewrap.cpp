@@ -38,7 +38,7 @@ int wmain(int argc, wchar_t *argv[])
 			newArgs[j++] = CheckArg(argv[a]);
 		}
 		newArgs[j] = 0;
-		int sts = _wspawnv(_P_WAIT, newArgs[0], newArgs);
+		int sts = _wspawnv(_P_OVERLAY, newArgs[0], newArgs);
 		return(sts);
 		//fprintf(stderr, "ERROR: failed to start %ws\n", newArgs[0]);
 		//return(1);
@@ -76,7 +76,7 @@ int wmain(int argc, wchar_t *argv[])
 			}
 			newArgs[j] = 0;
 			DBG("RERUN %ws -exec %ws\n", wrapperPath, procName);
-			int sts = _wspawnv(_P_WAIT, newArgs[0], newArgs);
+			int sts = _wspawnv(_P_OVERLAY, newArgs[0], newArgs);
 			return(sts);
 			//fprintf(stderr, "ERROR: failed to wrap %ws\n", wrapperPath);
 			//return(1);

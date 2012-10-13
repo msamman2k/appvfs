@@ -55,8 +55,15 @@ DBG_LEVEL="1"
 # removable: treat the mounted FS as removable
 #removable="-removable"
 removable=""
+case $1 in
+	s)  EXEC_COMMAND='-exec samples\\run_rails.bat';;
+esac
+
 args="-m $VFS_MOUNT_FOLDER -a $IMAGE_ARCHIVE -t $nthreads -g $DBG_LEVEL $EXE_REDIRECT_OPT $WRT_REDIRECTS $EXEC_COMMAND"
 
 echo "Run: $args"
+
+
+
 
 (../source/appvfs.exe $args 2>&1) | tee rails_appvfs.log

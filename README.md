@@ -88,7 +88,9 @@ Supported Platforms:
 Performance:
 ============
 
+<p>
 	Given that this is an application-level VFS, performance will surely be affected.  However, performance may still be within acceptable range for you because the VFS is actually loaded into memory by AppVFS. It all depends on the number of files and the overall size of VFS image you generate with mkvfs. I have ran a rails app from a VFS which includes both of the rails app and the ruby installation (total of 198MB) and performance was acceptable. If I leave the ruby installation out of the image then the performance is comparable to real environment running off of hard disk.  Therefore, when you package your application, you may want to split into two parts.  Your Senitive data, code and even binaries (that you do not want hackers to get access to) go into the image and common stuff go into hard disk.
+</p>
 
 
 Issues:
